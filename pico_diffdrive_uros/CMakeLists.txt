@@ -68,7 +68,7 @@ target_include_directories(pico_diffdrive_uros PRIVATE ${CMAKE_CURRENT_LIST_DIR}
 pico_generate_pio_header(pico_diffdrive_uros ${CMAKE_CURRENT_LIST_DIR}/quadrature_encoder.pio)
 
 # Add any user requested libraries
-target_link_libraries(pico_diffdrive_uros hardware_pio hardware_pwm hardware_spi hardware_gpio)
+target_link_libraries(pico_diffdrive_uros hardware_pio hardware_pwm hardware_spi hardware_gpio hardware_i2c)
 
 pico_add_extra_outputs(pico_diffdrive_uros)
 

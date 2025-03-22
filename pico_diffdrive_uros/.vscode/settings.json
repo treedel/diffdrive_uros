@@ -35,5 +35,26 @@
     "raspberry-pi-pico.cmakeAutoConfigure": true,
     "raspberry-pi-pico.useCmakeTools": false,
     "raspberry-pi-pico.cmakePath": "${HOME}/.pico-sdk/cmake/v3.29.9/bin/cmake",
-    "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja"
+    "raspberry-pi-pico.ninjaPath": "${HOME}/.pico-sdk/ninja/v1.12.1/ninja",
+    "files.associations": {
+        "mpu6050_wrapper.h": "c",
+        "diff_drive_base.h": "c",
+        "error_handling.h": "c",
+        "executor.h": "c",
+        "odometry.h": "c",
+        "int32.h": "c",
+        "defaultpins.h": "c",
+        "rclc.h": "c",
+        "typeinfo": "cpp",
+        "transform_stamped.h": "c",
+        "uros_diffdrive_controller.h": "c",
+        "joint_state.h": "c",
+        "tf_message.h": "c",
+        "encoder.h": "c",
+        "watchdog.h": "c",
+        "stdio.h": "c",
+        "vector": "c",
+        "stdlib.h": "c",
+        "rmw_microros.h": "c"
+    }
 }
