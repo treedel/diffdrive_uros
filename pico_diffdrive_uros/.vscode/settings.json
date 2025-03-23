@@ -55,6 +55,9 @@
         "stdio.h": "c",
         "vector": "c",
         "stdlib.h": "c",
-        "rmw_microros.h": "c"
+        "rmw_microros.h": "c",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp"
     }
 }

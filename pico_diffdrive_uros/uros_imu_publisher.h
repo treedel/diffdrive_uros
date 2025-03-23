@@ -6,6 +6,8 @@
 
     #include "sensor_msgs/msg/imu.h"
 
+    #define IMU_PUBLISH_RATE 20.0
+
     struct ImuPublisher {
         
         ImuController imu_controller;
@@ -55,7 +57,7 @@
             "/imu_data_raw",
             ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, Imu),
             imu_callback,
-            50.0
+            IMU_PUBLISH_RATE
         );
 
     }

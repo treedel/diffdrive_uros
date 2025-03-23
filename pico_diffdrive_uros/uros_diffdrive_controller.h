@@ -22,6 +22,13 @@
     #define ODOM_HEADER_FRAME_ID "odom"
     #define ODOM_CHILD_FRAME_ID "base_footprint"
 
+    #define ODOM_PUBLISH_TOPIC "wheel_odom"
+    #define TF_PUBLISH_TOPIC "tf"
+    #define CMD_VEL_TOPIC "cmd_vel"
+
+    // Uncomment to publish transform for odom
+    //#define PUBLISH_TF
+
     struct DiffDriveController {
 
         float wheel_radius;
@@ -37,8 +44,10 @@
         UrosWrapperPublisher odom_publisher;
         nav_msgs__msg__Odometry odom_msg;
 
-        UrosWrapperPublisher tf_publisher;
-        tf2_msgs__msg__TFMessage tf_msg;
+        #ifdef PUBLISH_TF
+            UrosWrapperPublisher tf_publisher;
+            tf2_msgs__msg__TFMessage tf_msg;
+        #endif
 
         UrosWrapperSubscriber cmd_vel_subscriber;
         geometry_msgs__msg__Twist cmd_vel_msg;
@@ -80,17 +89,19 @@
         diff_drive_controller.odom_msg.twist.twist.linear.x = get_odom_vel_lin_x(odom);
         diff_drive_controller.odom_msg.twist.twist.angular.z = get_odom_vel_ang_z(odom);
 
-        // Prepare tf message
-        diff_drive_controller.tf_msg.transforms.size = 1;
-        diff_drive_controller.tf_msg.transforms.data[0].header.stamp = diff_drive_controller.odom_msg.header.stamp;
-        diff_drive_controller.tf_msg.transforms.data[0].header.frame_id.data = "odom";
-        diff_drive_controller.tf_msg.transforms.data[0].child_frame_id.data = "base_footprint";
+        #ifdef PUBLISH_TF
+            // Prepare tf message
+            diff_drive_controller.tf_msg.transforms.size = 1;
+            diff_drive_controller.tf_msg.transforms.data[0].header.stamp = diff_drive_controller.odom_msg.header.stamp;
+            diff_drive_controller.tf_msg.transforms.data[0].header.frame_id.data = "odom";
+            diff_drive_controller.tf_msg.transforms.data[0].child_frame_id.data = "base_footprint";
 
-        diff_drive_controller.tf_msg.transforms.data[0].transform.translation.x = diff_drive_controller.odom_msg.pose.pose.position.x;
-        diff_drive_controller.tf_msg.transforms.data[0].transform.translation.y = diff_drive_controller.odom_msg.pose.pose.position.y;
-        diff_drive_controller.tf_msg.transforms.data[0].transform.translation.z = 0.0;
+            diff_drive_controller.tf_msg.transforms.data[0].transform.translation.x = diff_drive_controller.odom_msg.pose.pose.position.x;
+            diff_drive_controller.tf_msg.transforms.data[0].transform.translation.y = diff_drive_controller.odom_msg.pose.pose.position.y;
+            diff_drive_controller.tf_msg.transforms.data[0].transform.translation.z = 0.0;
 
-        diff_drive_controller.tf_msg.transforms.data[0].transform.rotation = diff_drive_controller.odom_msg.pose.pose.orientation;
+            diff_drive_controller.tf_msg.transforms.data[0].transform.rotation = diff_drive_controller.odom_msg.pose.pose.orientation;
+        #endif
 
         // Prepare joint states message
         diff_drive_controller.left_wheel_pos_rad += left_wheel_feedback_vel / diff_drive_controller.update_frequency;
@@ -101,16 +112,18 @@
 
     }
     
-    void tf_callback(rcl_timer_t* timer, int64_t last_call_time) {
-        
-        // Stamp and publish TF message
-        set_timestamp_now(
-            &diff_drive_controller.tf_msg.transforms.data[0].header.stamp.sec,
-            &diff_drive_controller.tf_msg.transforms.data[0].header.stamp.nanosec
-        );
-        rcl_ret_t ret = rcl_publish(&diff_drive_controller.tf_publisher.publisher, &diff_drive_controller.tf_msg, NULL);
+    #ifdef PUBLISH_TF
+        void tf_callback(rcl_timer_t* timer, int64_t last_call_time) {
+            
+            // Stamp and publish TF message
+            set_timestamp_now(
+                &diff_drive_controller.tf_msg.transforms.data[0].header.stamp.sec,
+                &diff_drive_controller.tf_msg.transforms.data[0].header.stamp.nanosec
+            );
+            rcl_ret_t ret = rcl_publish(&diff_drive_controller.tf_publisher.publisher, &diff_drive_controller.tf_msg, NULL);
 
-    }
+        }
+    #endif
 
     void odom_callback(rcl_timer_t* timer, int64_t last_call_time) {
 
@@ -121,7 +134,9 @@
         );
         rcl_ret_t ret = rcl_publish(&diff_drive_controller.odom_publisher.publisher, &diff_drive_controller.odom_msg, NULL);
 
-        tf_callback(timer, last_call_time);
+        #ifdef PUBLISH_TF
+            tf_callback(timer, last_call_time);
+        #endif
 
     }
 
@@ -168,7 +183,7 @@
         uros_wrapper_add_publisher(
             uros_core,
             &(diff_drive_controller.odom_publisher),
-            "/odom",
+            ODOM_PUBLISH_TOPIC,
             ROSIDL_GET_MSG_TYPE_SUPPORT(nav_msgs, msg, Odometry),
             odom_callback,
             diff_drive_controller.update_frequency
@@ -177,19 +192,21 @@
         diff_drive_controller.odom_msg.header.frame_id.data = ODOM_HEADER_FRAME_ID;
         diff_drive_controller.odom_msg.child_frame_id.data = ODOM_CHILD_FRAME_ID;
 
-        // tf publisher (Disabled auto publishing)
-        uros_wrapper_add_publisher(
-            uros_core,
-            &(diff_drive_controller.tf_publisher),
-            "/tf",
-            ROSIDL_GET_MSG_TYPE_SUPPORT(tf2_msgs, msg, TFMessage),
-            tf_callback,
-            0
-        );
+        #ifdef PUBLISH_TF
+            // tf publisher (Disabled auto publishing)
+            uros_wrapper_add_publisher(
+                uros_core,
+                &(diff_drive_controller.tf_publisher),
+                TF_PUBLISH_TOPIC,
+                ROSIDL_GET_MSG_TYPE_SUPPORT(tf2_msgs, msg, TFMessage),
+                tf_callback,
+                0
+            );
 
-        diff_drive_controller.tf_msg.transforms.data = malloc(sizeof(geometry_msgs__msg__TransformStamped));
-        diff_drive_controller.tf_msg.transforms.capacity = 1;
-        diff_drive_controller.tf_msg.transforms.size = 1;
+            diff_drive_controller.tf_msg.transforms.data = malloc(sizeof(geometry_msgs__msg__TransformStamped));
+            diff_drive_controller.tf_msg.transforms.capacity = 1;
+            diff_drive_controller.tf_msg.transforms.size = 1;
+        #endif
 
         diff_drive_controller.joint_indices[0] = jsp_add_joint(LEFT_WHEEL_JOINT_FRAME_ID);
         diff_drive_controller.joint_indices[1] = jsp_add_joint(RIGHT_WHEEL_JOINT_FRAME_ID);
@@ -198,7 +215,7 @@
         // cmd_vel subscriber
         uros_wrapper_add_subscriber(
             uros_core,
-            "cmd_vel",
+            CMD_VEL_TOPIC,
             ROSIDL_GET_MSG_TYPE_SUPPORT(geometry_msgs, msg, Twist),
             &(diff_drive_controller.cmd_vel_msg),
             cmd_vel_callback,

@@ -9,7 +9,6 @@
     #include <rmw_microros/rmw_microros.h>
     #include <rclc/rclc.h>
     #include <rclc/executor.h>
-    #include <rcl/logging.h>
 
     #define ROBOT_NAME_MAX_SIZE 10
     #define TOPIC_NAME_MAX_SIZE 20

@@ -4,6 +4,7 @@
 #include "motor_controller.h"
 #include "uros_diffdrive_controller.h"
 #include "uros_imu_publisher.h"
+#include "uros_servo_controller.h"
 
 // Constants
 #define TOTAL_CHANNELS 2
@@ -15,13 +16,28 @@
 #define VEL_LIM_ANG_Z 0.785
 
 // MPU6050 offsets
-#define OFFSET_ACCEL_X 0.75
-#define OFFSET_ACCEL_Y 0.61
-#define OFFSET_ACCEL_Z 0.5
+#define USE_PRESET_OFFSETS
 
-#define OFFSET_GYRO_X 0.0291
-#define OFFSET_GYRO_Y 0.0098
-#define OFFSET_GYRO_Z -0.003
+#ifdef USE_PRESET_OFFSETS
+    #define OFFSET_ACCEL_X 0.75
+    #define OFFSET_ACCEL_Y 0.61
+    #define OFFSET_ACCEL_Z 0.5
+
+    #define OFFSET_GYRO_X 0.0291
+    #define OFFSET_GYRO_Y 0.0098
+    #define OFFSET_GYRO_Z -0.003
+#endif
+
+#ifndef USE_PRESET_OFFSETS
+    #define OFFSET_ACCEL_X 0.0
+    #define OFFSET_ACCEL_Y 0.0
+    #define OFFSET_ACCEL_Z 0.0
+
+    #define OFFSET_GYRO_X 0.0
+    #define OFFSET_GYRO_Y 0.0
+    #define OFFSET_GYRO_Z 0.0
+#endif
+
 
 MotorController left_motor_controller;
 MotorController right_motor_controller;
@@ -29,6 +45,7 @@ MotorController right_motor_controller;
 UrosWrapperCore uros_core;
 
 // Defining pins
+const uint8_t SERVO_PIN = 2;
 const uint8_t ENC_PINS[TOTAL_CHANNELS] = {20, 16};
 const uint8_t MOTOR_PINS[TOTAL_CHANNELS][TOTAL_MOTOR_PINS] = {
   {7, 6},
@@ -105,6 +122,9 @@ int main() {
         VEL_LIM_ANG_Z,
         -VEL_LIM_ANG_Z
     );
+
+    servo_controller_attach(SERVO_PIN);
+    configure_servo_controller(&uros_core);
 
     setup_uros_executor(&uros_core);
 

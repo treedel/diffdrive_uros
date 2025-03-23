@@ -7,6 +7,8 @@
 #ifndef MPU6050_H
     #define MPU6050_H
 
+    #include <math.h>
+
     #include <stdio.h>
     #include <string.h>
     #include "pico/stdlib.h"
@@ -110,37 +112,37 @@
             raw_gyro[i] = (buffer[i * 2] << 8 | buffer[(i * 2) + 1]);;
         }
 
-        imu_controller->accel_x = ((float)((int)((raw_accel[0] / ACCEL_SCALE * 9.81f + imu_controller->accel_offset_x) * 100)) / 100.0f);
-        imu_controller->accel_y = ((float)((int)((raw_accel[1] / ACCEL_SCALE * 9.81f + imu_controller->accel_offset_y) * 100)) / 100.0f);
-        imu_controller->accel_z = ((float)((int)((raw_accel[2] / ACCEL_SCALE * 9.81f + imu_controller->accel_offset_z) * 100)) / 100.0f);
-        imu_controller->gyro_x = ((float)((int)((raw_gyro[0] / GYRO_SCALE * DEG_TO_RAD + imu_controller->gyro_offset_x) * 100)) / 100.0f);
-        imu_controller->gyro_y = ((float)((int)((raw_gyro[1] / GYRO_SCALE * DEG_TO_RAD + imu_controller->gyro_offset_y) * 100)) / 100.0f);
-        imu_controller->gyro_z = ((float)((int)((raw_gyro[2] / GYRO_SCALE * DEG_TO_RAD + imu_controller->gyro_offset_z) * 100)) / 100.0f);
+        imu_controller->accel_x = raw_accel[0] / ACCEL_SCALE * 9.81f + imu_controller->accel_offset_x;
+        imu_controller->accel_y = raw_accel[1] / ACCEL_SCALE * 9.81f + imu_controller->accel_offset_y;
+        imu_controller->accel_z = raw_accel[2] / ACCEL_SCALE * 9.81f + imu_controller->accel_offset_z;
+        imu_controller->gyro_x = raw_gyro[0] / GYRO_SCALE * DEG_TO_RAD + imu_controller->gyro_offset_x;
+        imu_controller->gyro_y = raw_gyro[1] / GYRO_SCALE * DEG_TO_RAD + imu_controller->gyro_offset_y;
+        imu_controller->gyro_z = raw_gyro[2] / GYRO_SCALE * DEG_TO_RAD + imu_controller->gyro_offset_z;
 
     }
 
     float get_accel_x(ImuController imu_controller) {
-        return imu_controller.accel_x;
+        return roundf(imu_controller.accel_x * 100) / 100;
     }
-
+    
     float get_accel_y(ImuController imu_controller) {
-        return imu_controller.accel_y;
+        return roundf(imu_controller.accel_y * 100) / 100;
     }
-
+    
     float get_accel_z(ImuController imu_controller) {
-        return imu_controller.accel_z;
+        return roundf(imu_controller.accel_z * 100) / 100;
     }
-
+    
     float get_gyro_x(ImuController imu_controller) { 
-        return imu_controller.gyro_x;
+        return roundf(imu_controller.gyro_x * 100) / 100;
     }
-
+    
     float get_gyro_y(ImuController imu_controller) { 
-        return imu_controller.gyro_y;
+        return roundf(imu_controller.gyro_y * 100) / 100;
     }
-
+    
     float get_gyro_z(ImuController imu_controller) { 
-        return imu_controller.gyro_z;
+        return roundf(imu_controller.gyro_z * 100) / 100;
     }
 
 #endif
